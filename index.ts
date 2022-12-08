@@ -1,33 +1,37 @@
 import * as http from 'http'
 import {IncomingMessage, ServerResponse} from 'http'
+import * as fs from 'fs'
+import * as p from 'path'
 
 const server = http.createServer()
+const publicDir = p.resolve(__dirname, 'public')  //找到public的相对路径
 
 server.on('request', (request: IncomingMessage, response: ServerResponse) => {
-  console.log('request.method')
-  console.log(request.method)
-  console.log('request.url')
-  console.log(request.url)
-  console.log('request.headers')
-  console.log(request.headers)
+  const {method, url, headers} = request
 
-  let array: any = []
-  request.on('data', (chunk) => {  //当用户上传内容时触发,chunk就是上传的内容
-    array.push(chunk)
-  })
-  request.on('end', () => {
-    const body = Buffer.concat(array).toString()
-    console.log('body')
-    console.log(body)
-
-    response.statusCode = 400
-    response.setHeader('X-rain', 'I m rain')
-
-    response.write('1\n')
-
-    response.end('hi\n')
-  })
-
+  switch (url) {
+    case '/index.html':
+      response.setHeader('Content-Type', 'text/html;charset=utf-8')
+      fs.readFile(p.resolve(publicDir, 'index.html'), (error, data) => {
+        if (error) {throw error}
+        response.end(data.toString())
+      })
+      break
+    case '/style.css':
+      response.setHeader('Content-Type', 'text/css;charset=utf-8')
+      fs.readFile(p.resolve(publicDir, 'style.css'), (error, data) => {
+        if (error) {throw error}
+        response.end(data.toString())
+      })
+      break
+    case '/main.js':
+      response.setHeader('Content-Type', 'text/javascript;charset=utf-8')
+      fs.readFile(p.resolve(publicDir, 'main.js'), (error, data) => {
+        if (error) {throw error}
+        response.end(data.toString())
+      })
+      break
+  }
 })
 
 server.listen(8888)
